@@ -40,6 +40,7 @@ The `FDC` function takes a list of streamflow data, along with optional title an
 ```python
 streamflow_data = [100, 200, 300, 400, 500]  # Example streamflow data
 FDC(streamflow_data, title='Sample FDC Plot', unit='m^3/s')
+```
 
 ***
 # Water Quality Boxplot Function Documentation
@@ -81,6 +82,7 @@ The `boxplot` function takes a pandas DataFrame containing water quality data, a
 import pandas as pd
 # Assuming `data` is a pandas DataFrame with the required structure
 boxplot(data, unit='mg/L', criteria='all')
+```
 
 ***
 # PyHydro Script Documentation
@@ -125,3 +127,4 @@ The core of this script is a function that creates a hydrograph from a given pan
 import pandas as pd
 # Assuming `data` is a pandas DataFrame with the required structure
 plot_hydrograph(data, title='Sample Hydrograph', unit='m^3/s')
+```
