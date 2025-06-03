@@ -2,6 +2,11 @@ import PyHydro
 import numpy as np
 import pandas as pd
 
+major_ver = 1
+minor_ver = 11.0
+edit_name = "D"
+PyHydro.test_version(major_ver, minor_ver, edit_name)
+
 # Generate some sample daily streamflow data for demonstration
 # ! sample data is generated using numpy random function
 np.random.seed(42)
@@ -43,3 +48,12 @@ sp_df = pd.DataFrame({
 sp_df.set_index('Date', inplace=True)
 
 PyHydro.hydrograph(sp_df, title = station)
+
+
+
+
+# make hundreds of sample random numbers for validation. ranged from 0 to 1000.
+simlist = np.random.randint(0, 1000, size=100)
+vallist = [i*np.random.uniform(0.8,1.2) for i in simlist]
+
+PyHydro.sim_vali(simlist, vallist, title=station)

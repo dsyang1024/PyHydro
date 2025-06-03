@@ -2,10 +2,11 @@ def FDC (streamflow, title='', unit=r'ft$^{3}$/sec'):
 
     """_summary_
         `FDC` is a function that generates a Flow Duration Curve (FDC) plot for a given streamflow data.
+    
     Args:
-        streamflow (numerical list): list of the streamflow data
-        title (str): title of the plot. Default is ''
-        unit (str): unit of the streamflow data. Default is ft^3/sec
+        streamflow (_list_): a numerical list of the streamflow data.
+        title (str): title of the plot. Default is None.
+        unit (str): unit of the streamflow data. Default is ft^3/sec.
     """
     import numpy as np
     import matplotlib.pyplot as plt
@@ -18,7 +19,7 @@ def FDC (streamflow, title='', unit=r'ft$^{3}$/sec'):
     exceedance_probability = np.arange(1, len(sorted_streamflow) + 1) / (len(sorted_streamflow) + 1)
 
     # Create the FDC plot
-    plt.figure(figsize=(5, 3))
+    plt.figure(figsize=(6, 4))
     plt.plot(exceedance_probability * 100, sorted_streamflow, color='darkblue')
     
     plt.yscale('log')
@@ -53,7 +54,7 @@ def boxplot (wq_data, unit=r'mg/L',criteria='all'):
     if criteria == 'all':
         # Create the boxplot for each parameter
         for i in wq_data.columns.to_list():
-            plt.figure(figsize=(5, 3))
+            plt.figure(figsize=(6, 4))
             wq_data[i].plot.box()
             plt.ylabel('Concentration ('+unit+')')
             plt.tight_layout()
@@ -66,7 +67,7 @@ def boxplot (wq_data, unit=r'mg/L',criteria='all'):
         # Create the boxplot for each parameter for each month
         for i in wq_data.columns.to_list():
             temp = wq_data[i].to_frame()
-            temp.groupby(temp.index.month).boxplot(subplots=False,figsize=(5, 3))
+            temp.groupby(temp.index.month).boxplot(subplots=False,figsize=(6, 4))
             plt.ylabel('Concentration ('+unit+')')
             # set xtick label as month name
             plt.xticks(ticks=range(1,13),labels=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'])
@@ -78,7 +79,7 @@ def boxplot (wq_data, unit=r'mg/L',criteria='all'):
     elif criteria == 'annual':
         print ('Annual option is not recommended at this point. It will be updated in the future release.')
         # Create the boxplot for each parameter for each month
-        wq_data.groupby(wq_data.index.year).boxplot(subplots=False,figsize=(5, 3), rot=45)
+        wq_data.groupby(wq_data.index.year).boxplot(subplots=False,figsize=(6, 4), rot=45)
         plt.xlabel('Year, WQ')
         plt.ylabel('Concentration ('+unit+')')
         plt.tight_layout()
@@ -103,6 +104,7 @@ def boxplot (wq_data, unit=r'mg/L',criteria='all'):
 
 
 
+
 def hydrograph (sp_df, title='', unit=r'ft$^{3}$/sec'):
     """_summary_
         `hydrograph` is a function that generates a hydrograph plot for a given streamflow data.
@@ -114,23 +116,80 @@ def hydrograph (sp_df, title='', unit=r'ft$^{3}$/sec'):
     import matplotlib.pyplot as plt
     plt.rcParams["font.family"] = "Times New Roman"
 
-    # Create the hydrograph plot
-    fig, (ax1, ax2) = plt.subplots(ncols=1, nrows=2, figsize = (6,5), sharex=True, gridspec_kw={'height_ratios': [1, 2]})
-    # plot precipitation upside down using second y-axis
-    # TODO precip graph should be bar graph
-    sp_df['precip'].plot(color='skyblue', ax=ax1)
     # plot streamflow
-    sp_df['streamflow'].plot.line(color='darkblue', ax=ax2)
+    sp_df['streamflow'].plot.line(color='darkblue', figsize=(10, 5), linewidth=1.5, label='Streamflow')
 
-    ax1.set_ylabel('precipitation (inch)')
-    ax1.invert_yaxis()
-
-    ax2.set_ylabel('Streamflow ('+unit+')')
+    plt.ylabel('Streamflow ('+unit+')')
 
     plt.xlabel('Date')
     plt.grid()
     plt.suptitle(title+' Hydrograph') if title != '' else None
     plt.tight_layout()
     plt.savefig('Hydrograph.png',dpi=600)
+    # plt.show()
+    plt.clf()
+
+
+
+
+def test_version(a, b, c):
+    """_summary_
+
+    Args:
+        a (_int_): major version number
+        b (_float_): minor update number
+        c (_name_): last editor
+    """
+
+    version = f"{a}.{b}_{c}"
+    import PyHydro
+    print('PyHydro version:', version)
+
+
+
+def sim_vali(simlist, obslist, title='', unit=r'ft$^{3}$/sec'):
+    """_summary_
+        `sim_vali` is a function that generates a scatter plot for simulated and observed values.
+    
+    Args:
+        simlist (_list_): a numerical list of the simulated values.
+        obslist (_list_): a numerical list of the observed values.
+        title (str): title of the plot. Default is ''
+        unit (str): unit of the values. Default is ft^3/sec
+    """
+    import matplotlib.pyplot as plt
+    plt.rcParams["font.family"] = "Times New Roman"
+
+    if len(simlist) != len(obslist):
+        raise ValueError("The length of simulated and observed lists must be the same.")
+
+    plt.figure(figsize=(5, 5))
+    plt.scatter(obslist, simlist, color='darkblue', alpha=0.5)
+    plt.plot([min(obslist), max(obslist)], [min(obslist), max(obslist)], color='red', linestyle='--')
+
+    plt.xlabel('Observed ('+unit+')')
+    plt.ylabel('Simulated ('+unit+')')
+    plt.title(title+' Simulated vs Observed') if title != '' else None
+    # add infinite 45 degree line for reference
+    plt.axline((0, 0), slope=1, color='green', linestyle='--', label='1:1 Line')
+
+    # add linear regression line
+    from sklearn.linear_model import LinearRegression
+    import numpy as np
+    X = np.array(obslist).reshape(-1, 1)
+    y = np.array(simlist)
+    model = LinearRegression()
+    model.fit(X, y)
+    y_pred = model.predict(X)
+    plt.plot(obslist, y_pred, color='red', label='Linear Regression', linewidth=1.5)
+    
+    graph_min = min(min(obslist), min(simlist))
+    graph_max = max(max(obslist), max(simlist))
+    plt.xlim(graph_min, graph_max)
+    plt.ylim(graph_min, graph_max)
+    plt.grid()
+    plt.tight_layout()
+    plt.legend()
+    plt.savefig('Simulated_vs_Observed.png',dpi=600)
     # plt.show()
     plt.clf()
